@@ -284,12 +284,22 @@ def get_char(js):
     string_m = re.search("((?:%\w\w)+)", js)
     string = urllib.unquote(string_m.group(1)).decode("utf8")
     
-    index_m = re.search("(\d+(;\d+){%s})"%(len(string) - 1), js[string_m.end():])
+    index_m = re.search("([\d,]+(;[\d,]+)+)", js[string_m.end():])
 
     string_list = list(string)
     index_list = index_m.group(1).split(";")
-    string_list = [string_list[int(x)] for x in index_list]
-    return string_list
+    _word_list = []
+    for word_index_list in index_list:
+        _word = ""
+        if "," in word_index_list:
+            word_index_list = word_index_list.split(",")
+            word_index_list = [int(x) for x in word_index_list]
+        else:
+            word_index_list = [int(word_index_list)]
+        for word_index in word_index_list:
+            _word += string_list[word_index]
+        _word_list.append(_word)
+    return _word_list
 
 def get_complete_text_autohome(text):
     js = re.search("<!--@HS_ZY@--><script>([\s\S]+)\(document\);</script>", text.encode("utf8"))
@@ -308,7 +318,9 @@ def get_complete_text_autohome(text):
     
 
 resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
+#resp = requests.get("http://k.autohome.com.cn/spec/27507/view_1524661_1.html?st=2&piap=1|27507|0|0|1|0|0|0|0|0|1")
 resp.encoding = "gbk"
 text = get_complete_text_autohome(resp.text)
 
 print(re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
+#print(re.search("<div\s*class=[\'\"]text-con[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
