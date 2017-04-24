@@ -44,7 +44,7 @@ http://xygs.gsaic.gov.cn/gsxygs/pub!list.do
 ### js执行后url增加_dsign参数  [get_dsign.py](https://github.com/duanyifei/antispider/blob/master/get_dsign.py)
 - [http://bbs.auto.ifeng.com/thread-2758815-1-1.html](http://bbs.auto.ifeng.com/thread-2758815-1-1.html)
 - [http://wj.scdaily.scol.com.cn/thread-1754575-1-1.html](http://wj.scdaily.scol.com.cn/thread-1754575-1-1.html)
--js代码 
+  -js代码 
 
 ### 访问显示安全检查中... 5秒后经过js跳转到正常页面
 - [http://hwsqnews.com/index.html](http://hwsqnews.com/index.html)
@@ -55,3 +55,9 @@ http://xygs.gsaic.gov.cn/gsxygs/pub!list.do
 - [http://club.autohome.com.cn/bbs/thread-a-100024-62404423-1.html](http://club.autohome.com.cn/bbs/thread-a-100024-62404423-1.html)
 - js代码见 [autohome.js](https://github.com/duanyifei/antispider/blob/master/autohome.js)
 - 破解代码 见[autohome.py](https://github.com/duanyifei/antispider/blob/master/autohome.py)
+
+### 限制访问频率以及代理类型
+
+- [https://m.guazi.com/bj/dazhong/](https://m.guazi.com/bj/dazhong/)
+- 访问频率要小于 0.5次/s
+- 如果使用代理的话 http协议要用http协议的代理 https要用https的代理，混用的话相当于没加代理
