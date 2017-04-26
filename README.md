@@ -61,3 +61,7 @@ http://xygs.gsaic.gov.cn/gsxygs/pub!list.do
 - [https://m.guazi.com/bj/dazhong/](https://m.guazi.com/bj/dazhong/)
 - 访问频率要小于 0.5次/s
 - 如果使用代理的话 http协议要用http协议的代理 https要用https的代理，混用的话相当于没加代理
+
+### 巧妙使用\r在不同平台的差异让爬虫开发者头疼
+
+- \r在linux下会被解释为回车，如果使用\r当做换行符，在网页和windows上显示都没有问题，但在linux下输出的时候测绘覆盖\r之前的字符，导致输出结果和网页上看到的少很多。。，如果不太明白\r含义的话，想必要调试很久很久很久很久吧。。。
