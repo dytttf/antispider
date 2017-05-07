@@ -269,21 +269,22 @@ def get_char(js):
     var_regex = "var\s+(\w+)=(.*?);\s"
 
     for var_name, var_value in re.findall(var_regex, js):
-      var_value = var_value.strip("\'\"").strip()
-      if "(" in var_value:
-         var_value = ";"
-      all_var[var_name] = var_value
-      
-    js = re.sub(var_regex, "", js)
+        var_value = var_value.strip("\'\"").strip()
+        if "(" in var_value:
+            var_value = ";"
+        all_var[var_name] = var_value
+
+    # 注释掉 此正则可能会把关键js语句删除掉
+    #js = re.sub(var_regex, "", js)
 
     for var_name, var_value in all_var.items():
-      js = js.replace(var_name, var_value)
+        js = js.replace(var_name, var_value)
 
     js = re.sub("[\s+']", "", js)
-    
+
     string_m = re.search("((?:%\w\w)+)", js)
     string = urllib.unquote(string_m.group(1)).decode("utf8")
-    
+
     index_m = re.search("([\d,]+(;[\d,]+)+)", js[string_m.end():])
 
     string_list = list(string)
@@ -315,7 +316,6 @@ def get_complete_text_autohome(text):
         return char
     text = re.sub("<span\s*class=[\'\"]hs_kw(\d+)_[^\'\"]+[\'\"]></span>", char_replace, text)
     return text
-    
 
 resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
 #resp = requests.get("http://k.autohome.com.cn/spec/27507/view_1524661_1.html?st=2&piap=1|27507|0|0|1|0|0|0|0|0|1")
