@@ -2,6 +2,7 @@
 import re
 import urllib
 import requests
+import traceback
 
 def get_char(js):
     all_var = {}
@@ -289,6 +290,7 @@ def get_char(js):
 
     string_list = list(string)
     index_list = index_m.group(1).split(";")
+
     _word_list = []
     for word_index_list in index_list:
         _word = ""
@@ -303,24 +305,43 @@ def get_char(js):
     return _word_list
 
 def get_complete_text_autohome(text):
-    js = re.search("<!--@HS_ZY@--><script>([\s\S]+)\(document\);</script>", text.encode("utf8"))
-    if not js:
-        return text
-    try:
-        char_list = get_char(js.group(1))
-    except Exception as e:
-        return text
+    types = re.findall('hs_kw\d+_([^\'\"]+)', text)
+    types = set(types)
+
+    js_list = re.findall("<script>(\(function[\s\S]+?)\(document\);</script>", text.encode("utf8"))
+    type_charlist = {}
+    for js in js_list:
+        for _type in types:
+            if _type in js:
+                break
+        else:
+            continue
+        if not js:
+            continue
+        try:
+            char_list = get_char(js)
+        except Exception as e:
+            traceback.print_exc()
+            continue
+        type_charlist.update({_type: char_list})
+
     def char_replace(m):
         index = int(m.group(1))
+        typ = m.group(2)
+        char_list = type_charlist.get(typ, [])
+        if not char_list:
+            return m.group()
         char = char_list[index]
         return char
-    text = re.sub("<span\s*class=[\'\"]hs_kw(\d+)_[^\'\"]+[\'\"]></span>", char_replace, text)
+    text = re.sub("<span\s*class=[\'\"]hs_kw(\d+)_([^\'\"]+)[\'\"]></span>", char_replace, text)
     return text
 
-resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
+resp = requests.get("http://car.autohome.com.cn/config/spec/1001360.html")
 #resp = requests.get("http://k.autohome.com.cn/spec/27507/view_1524661_1.html?st=2&piap=1|27507|0|0|1|0|0|0|0|0|1")
+#resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
 resp.encoding = "gbk"
 text = get_complete_text_autohome(resp.text)
 
-print(re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
+print(re.search('var config = (.*?);\r', text, re.DOTALL).group(1))
 #print(re.search("<div\s*class=[\'\"]text-con[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
+#print(re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
