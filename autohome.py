@@ -283,10 +283,17 @@ def get_char(js):
 
     js = re.sub("[\s+']", "", js)
 
-    string_m = re.search("((?:%\w\w)+)", js)
-    string = urllib.unquote(string_m.group(1)).decode("utf8")
+    # 寻找%E4%B8%AD%E5%80%92%E 密集区域
+    string_region = re.findall("((?:%\w\w)+)", js)
+    string_str = ""
+    for string_ in string_region:
+        if len(string_) > len(string_str):
+            string_str = string_
 
-    index_m = re.search("([\d,]+(;[\d,]+)+)", js[string_m.end():])
+    string = urllib.unquote(string_str).decode("utf8")
+
+    # 从 字符串密集区域后面开始寻找索引区域
+    index_m = re.search("([\d,]+(;[\d,]+)+)", js[js.find(string_str) + len(string_str):])
 
     string_list = list(string)
     index_list = index_m.group(1).split(";")
@@ -336,12 +343,27 @@ def get_complete_text_autohome(text):
     text = re.sub("<span\s*class=[\'\"]hs_kw(\d+)_([^\'\"]+)[\'\"]></span>", char_replace, text)
     return text
 
-resp = requests.get("http://car.autohome.com.cn/config/spec/1001360.html")
-#resp = requests.get("http://k.autohome.com.cn/spec/27507/view_1524661_1.html?st=2&piap=1|27507|0|0|1|0|0|0|0|0|1")
-#resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
-resp.encoding = "gbk"
-text = get_complete_text_autohome(resp.text)
+if 0:
+    # 论坛
+    resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
+    resp.encoding = "gbk"
+    text = get_complete_text_autohome(resp.text)
+    print(re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
 
-print(re.search('var config = (.*?);\r', text, re.DOTALL).group(1))
-#print(re.search("<div\s*class=[\'\"]text-con[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
-#print(re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
+if 0:
+    # 口碑
+    resp = requests.get("http://k.autohome.com.cn/spec/27507/view_1524661_1.html?st=2&piap=1|27507|0|0|1|0|0|0|0|0|1")
+    resp.encoding = "gbk"
+    text = get_complete_text_autohome(resp.text)
+    text = re.sub("<style[^>]+?>[\s\S]+?</style>", "", text)
+    text = re.sub("<script[^>]?>[\s\S]+?</script>", "", text)
+    print(re.search("<div\s*class=[\'\"]text-con[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
+
+if 0:
+    # 参数配置
+    resp = requests.get("http://car.autohome.com.cn/config/spec/1001360.html")
+    resp.encoding = "gbk"
+    text = get_complete_text_autohome(resp.text)
+    print(re.search('var config = (.*?);\r', text, re.DOTALL).group(1))
+
+
