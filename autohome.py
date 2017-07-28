@@ -291,6 +291,9 @@ def get_char(js):
             string_str = string_
 
     string = urllib.unquote(string_str).decode("utf8")
+    # 当只有一个替换字符时 下面正则寻找失败 此时也不用寻找了
+    if len(string) == 1:
+        return [string]
 
     # 从 字符串密集区域后面开始寻找索引区域
     index_m = re.search("([\d,]+(;[\d,]+)+)", js[js.find(string_str) + len(string_str):])
@@ -343,9 +346,10 @@ def get_complete_text_autohome(text):
     text = re.sub("<span\s*class=[\'\"]hs_kw(\d+)_([^\'\"]+)[\'\"]></span>", char_replace, text)
     return text
 
-if 0:
+if 1:
     # 论坛
-    resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
+    #resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
+    resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-2561-64686945-1.html")
     resp.encoding = "gbk"
     text = get_complete_text_autohome(resp.text)
     print(re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
