@@ -1,10 +1,12 @@
 #coding:utf8
 import re
+import string
 import urllib
 import requests
 import traceback
+from collections import defaultdict
 
-def get_char(js):
+def get_char(js, replace_count):
     all_var = {}
     # 判断混淆 无参数 返回常量 函数
     if_else_no_args_return_constant_function_functions = []
@@ -284,21 +286,51 @@ def get_char(js):
     js = re.sub("[\s+']", "", js)
 
     # 寻找%E4%B8%AD%E5%80%92%E 密集区域
-    string_region = re.findall("((?:%\w\w)+)", js)
+    #string_region = re.findall("((?:%\w\w)+)", js)
+    string_region = re.findall("((?:%\w\w|[A-Za-z\d])+)", js)
+    # 去重
+    string_region = set(string_region)
+    # 判断是否存在汉字
+    chinese_flag = 0
+    for string_ in string_region:
+        if re.search("%\w\w", string_):
+            chinese_flag = 1
+    if not chinese_flag:
+        # 可能混淆字符为纯英文 。。。尚未解决
+        return []
     string_str = ""
     for string_ in string_region:
+        if not re.search("%\w\w", string_):
+            continue
+        # 过滤 
+        utf8_string = urllib.unquote(string_)
+        if not utf8_string.isalpha():
+            # 去掉可能匹配到的多余字符 \w+  建立在混淆字符串是排好序的 字母在汉字前
+            utf8_string = utf8_string.rstrip(string.letters + string.digits + "_")
+        try:
+            unicode_string = utf8_string.decode("utf8")
+        except:
+            continue
+        if len(unicode_string) < replace_count:
+            continue
         if len(string_) > len(string_str):
             string_str = string_
 
-    string = urllib.unquote(string_str).decode("utf8")
+    utf8_string = urllib.unquote(string_str)
+    if not utf8_string.isalpha():
+        # 去掉可能匹配到的多余字符 \w+  建立在混淆字符串是排好序的 字母在汉字前
+        utf8_string = utf8_string.rstrip(string.letters + string.digits + "_")
+
+    unicode_string = utf8_string.decode("utf8")
+
     # 当只有一个替换字符时 下面正则寻找失败 此时也不用寻找了
-    if len(string) == 1:
-        return [string]
+    if len(unicode_string) == 1:
+        return [unicode_string]
 
     # 从 字符串密集区域后面开始寻找索引区域
     index_m = re.search("([\d,]+(;[\d,]+)+)", js[js.find(string_str) + len(string_str):])
 
-    string_list = list(string)
+    string_list = list(unicode_string)
     index_list = index_m.group(1).split(";")
 
     _word_list = []
@@ -315,8 +347,13 @@ def get_char(js):
     return _word_list
 
 def get_complete_text_autohome(text):
-    types = re.findall('hs_kw\d+_([^\'\"]+)', text)
-    types = set(types)
+    _types_info = defaultdict(list)
+    types = re.findall('hs_kw(\d+_[^\'\"]+)', text)
+    for item in types:
+        idx, type = item.split("_")
+        _types_info[type].append(idx)
+    # 获取混淆字符个数
+    types = {type: len(set(value)) for type, value in _types_info.items()}
 
     js_list = re.findall("<script>(\(function[\s\S]+?)\(document\);</script>", text.encode("utf8"))
     type_charlist = {}
@@ -329,7 +366,7 @@ def get_complete_text_autohome(text):
         if not js:
             continue
         try:
-            char_list = get_char(js)
+            char_list = get_char(js, types[_type])
         except Exception as e:
             traceback.print_exc()
             continue
@@ -346,28 +383,42 @@ def get_complete_text_autohome(text):
     text = re.sub("<span\s*class=[\'\"]hs_kw(\d+)_([^\'\"]+)[\'\"]></span>", char_replace, text)
     return text
 
-if 1:
+debug_flag = 1
+
+if 0 or debug_flag:
     # 论坛
-    #resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html")
-    resp = requests.get("http://club.autohome.com.cn/bbs/thread-c-2561-64686945-1.html")
+    url = "http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html"
+    url = "http://club.autohome.com.cn/bbs/thread-c-2561-64686945-1.html"
+    resp = requests.get(url)
     resp.encoding = "gbk"
     text = get_complete_text_autohome(resp.text)
-    print(re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
+    data = re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1)
+    if debug_flag:
+        if "hs_kw" not in data:
+            print("%s ok !!" % url)
 
-if 0:
+if 0 or debug_flag:
     # 口碑
-    resp = requests.get("http://k.autohome.com.cn/spec/27507/view_1524661_1.html?st=2&piap=1|27507|0|0|1|0|0|0|0|0|1")
+    url = "http://k.autohome.com.cn/spec/27507/view_1524661_1.html?st=2&piap=1|27507|0|0|1|0|0|0|0|0|1"
+    resp = requests.get(url)
     resp.encoding = "gbk"
     text = get_complete_text_autohome(resp.text)
     text = re.sub("<style[^>]+?>[\s\S]+?</style>", "", text)
     text = re.sub("<script[^>]?>[\s\S]+?</script>", "", text)
-    print(re.search("<div\s*class=[\'\"]text-con[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1))
+    data = re.search("<div\s*class=[\'\"]text-con[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1)
+    if debug_flag:
+        if "hs_kw" not in data:
+            print("%s ok !!" % url)
 
-if 0:
+
+if 0 or debug_flag:
     # 参数配置
-    resp = requests.get("http://car.autohome.com.cn/config/spec/1001360.html")
+    url = "http://car.autohome.com.cn/config/spec/1001360.html"
+    url = "http://car.autohome.com.cn/config/spec/1646.html" # 混淆字符存在英文
+    resp = requests.get(url)
     resp.encoding = "gbk"
     text = get_complete_text_autohome(resp.text)
-    print(re.search('var config = (.*?);\r', text, re.DOTALL).group(1))
-
-
+    data = re.search('var config = (.*?);\r', text, re.DOTALL).group(1)
+    if debug_flag:
+        if "hs_kw" not in data:
+            print("%s ok !!" % url)
