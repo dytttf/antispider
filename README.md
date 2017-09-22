@@ -21,6 +21,7 @@
 ### 需要验证referer
 - [http://www.mxwz.com/pingyi/wlhyr/py_list.aspx?type=ly](http://www.mxwz.com/pingyi/wlhyr/py_list.aspx?type=ly)
 - [http://www.mxwz.com/pingyi/py_view.aspx?ID=491892](http://www.mxwz.com/pingyi/py_view.aspx?ID=491892)
+- [http://weixin.sogou.com/weixin?type=2&ie=utf8&query=%E5%85%A8%E5%9B%BD%E9%93%81%E8%B7%AF%E8%BF%8E%E5%A4%A7%E8%B0%83%E5%9B%BE&tsn=1&ft=&et=&interation=&wxid=&usip=](http://weixin.sogou.com/weixin?type=2&ie=utf8&query=%E5%85%A8%E5%9B%BD%E9%93%81%E8%B7%AF%E8%BF%8E%E5%A4%A7%E8%B0%83%E5%9B%BE&tsn=1&ft=&et=&interation=&wxid=&usip=)
 ***
 ### js跳转 [changde.py](https://github.com/duanyifei/antispider/blob/master/changde.py)
 - [http://bbs.changde.gov.cn/](http://bbs.changde.gov.cn/)
