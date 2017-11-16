@@ -269,7 +269,7 @@ def get_char(js, replace_count):
         js = js.replace(i, function_name.group(1))
 
     # 获取所有变量
-    var_regex = "var\s+(\w+)=(.*?);\s"
+    var_regex = "var\s+(\w+)\s*=\s*([\'\"].*?[\'\"]);\s"
 
     for var_name, var_value in re.findall(var_regex, js):
         var_value = re.sub("\s", "", var_value).strip("\'\" ")
