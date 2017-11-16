@@ -272,7 +272,7 @@ def get_char(js, replace_count):
     var_regex = "var\s+(\w+)=(.*?);\s"
 
     for var_name, var_value in re.findall(var_regex, js):
-        var_value = var_value.strip("\'\"").strip()
+        var_value = re.sub("\s", "", var_value).strip("\'\" ")
         if "(" in var_value:
             var_value = ";"
         all_var[var_name] = var_value
@@ -389,9 +389,10 @@ if 0 or debug_flag:
     # 论坛
     url = "http://club.autohome.com.cn/bbs/thread-c-3788-62403429-1.html"
     url = "http://club.autohome.com.cn/bbs/thread-c-2561-64686945-1.html"
-    resp = requests.get(url)
-    resp.encoding = "gbk"
-    text = get_complete_text_autohome(resp.text)
+    headers = {"User-Agent": "Mozilla/6.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"}
+    resp = requests.get(url, headers=headers)
+    text = resp.content.decode("gbk")
+    text = get_complete_text_autohome(text)
     data = re.search("<div\s*class=[\'\"]tz-paragraph[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1)
     if debug_flag:
         if "hs_kw" not in data:
@@ -400,12 +401,13 @@ if 0 or debug_flag:
 if 0 or debug_flag:
     # 口碑
     url = "http://k.autohome.com.cn/spec/27507/view_1524661_1.html?st=2&piap=1|27507|0|0|1|0|0|0|0|0|1"
-    resp = requests.get(url)
-    resp.encoding = "gbk"
-    text = get_complete_text_autohome(resp.text)
+    headers = {"User-Agent": "Mozilla/6.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"}
+    resp = requests.get(url, headers=headers)
+    text = resp.content.decode("gbk")
+    text = get_complete_text_autohome(text)
     text = re.sub("<style[^>]+?>[\s\S]+?</style>", "", text)
     text = re.sub("<script[^>]?>[\s\S]+?</script>", "", text)
-    data = re.search("<div\s*class=[\'\"]text-con[^\'\"]*?[\'\"]>([\s\S]+?)</div>", text).group(1)
+    data = re.search("<div\s*class=[\'\"]text-con[\'\"][^>]*>([\s\S]+?)</div>", text).group(1)
     if debug_flag:
         if "hs_kw" not in data:
             print("%s ok !!" % url)
@@ -415,9 +417,10 @@ if 0 or debug_flag:
     # 参数配置
     url = "http://car.autohome.com.cn/config/spec/1001360.html"
     url = "http://car.autohome.com.cn/config/spec/1646.html" # 混淆字符存在英文
-    resp = requests.get(url)
-    resp.encoding = "gbk"
-    text = get_complete_text_autohome(resp.text)
+    headers = {"User-Agent": "Mozilla/6.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36"}
+    resp = requests.get(url, headers=headers)
+    text = resp.content.decode("gbk")
+    text = get_complete_text_autohome(text)
     data = re.search('var config = (.*?);\r', text, re.DOTALL).group(1)
     if debug_flag:
         if "hs_kw" not in data:
